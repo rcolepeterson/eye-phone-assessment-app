@@ -200,7 +200,7 @@ export function PhotoUpload({ onImagesUploaded }: PhotoUploadProps) {
   const handleUpload = () => {
     if (selectedImages.length > 0) {
       stopCamera()
-      onImagesUploaded(selectedImages)
+      onImagesUploaded([selectedImages[0]]) // Send only the first/best image
     }
   }
 
@@ -322,7 +322,7 @@ export function PhotoUpload({ onImagesUploaded }: PhotoUploadProps) {
               <h4 className="font-medium">Selected Photos ({selectedImages.length})</h4>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                 {selectedImages.map((image, index) => (
-                  <div key={index} className="relative group">
+                  <div key={index} className={`relative group ${index === 0 ? "ring-2 ring-blue-400" : ""}`}>
                     <div className="aspect-square bg-muted rounded-lg overflow-hidden">
                       <img
                         src={URL.createObjectURL(image) || "/placeholder.svg"}
@@ -330,6 +330,11 @@ export function PhotoUpload({ onImagesUploaded }: PhotoUploadProps) {
                         className="w-full h-full object-cover"
                       />
                     </div>
+                    {index === 0 && (
+                      <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-blue-500 text-white text-xs px-2 py-1 rounded">
+                        Will Analyze
+                      </div>
+                    )}
                     <Button
                       variant="destructive"
                       size="sm"
@@ -341,8 +346,15 @@ export function PhotoUpload({ onImagesUploaded }: PhotoUploadProps) {
                   </div>
                 ))}
               </div>
+              <div className="bg-blue-50 p-3 rounded-lg">
+                <p className="text-sm text-blue-800">
+                  <strong>AI Analysis:</strong> We'll analyze your best photo (highlighted in blue) for the most
+                  accurate results.
+                  {selectedImages.length > 1 && " Additional photos are saved for your records."}
+                </p>
+              </div>
               <Button onClick={handleUpload} className="w-full" size="lg" disabled={selectedImages.length === 0}>
-                Continue with {selectedImages.length} Photo{selectedImages.length !== 1 ? "s" : ""}
+                Analyze Photo with AI
               </Button>
             </div>
           )}

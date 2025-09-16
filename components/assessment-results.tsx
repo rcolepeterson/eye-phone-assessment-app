@@ -5,7 +5,17 @@ import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import { CheckCircle, AlertTriangle, XCircle, ExternalLink, RotateCcw, Info, Eye, Brain } from "lucide-react"
+import {
+  CheckCircle,
+  AlertTriangle,
+  XCircle,
+  ExternalLink,
+  RotateCcw,
+  Info,
+  Eye,
+  Brain,
+  AlertCircle,
+} from "lucide-react"
 
 interface AssessmentResult {
   riskLevel: "Low Risk" | "Medium Risk" | "High Risk"
@@ -13,6 +23,8 @@ interface AssessmentResult {
   callToAction?: string
   confidence?: number
   detectedFeatures?: string[]
+  isMockResult?: boolean
+  errorMessage?: string
 }
 
 interface AssessmentResultsProps {
@@ -70,6 +82,17 @@ export function AssessmentResults({ result, onStartOver }: AssessmentResultsProp
           <p className="text-muted-foreground">Here are your child's eye health assessment results</p>
         </div>
 
+        {result.isMockResult && (
+          <Alert className="mb-6 border-orange-200 bg-orange-50">
+            <AlertCircle className="h-4 w-4 text-orange-600" />
+            <AlertDescription className="text-orange-800">
+              <strong>Demo Mode:</strong> This is a simulated result for demonstration purposes.
+              {result.errorMessage && <span className="block mt-1 text-sm">Reason: {result.errorMessage}</span>}
+              For real AI analysis, ensure your OpenAI API key is properly configured.
+            </AlertDescription>
+          </Alert>
+        )}
+
         {/* Main Results Card */}
         <Card className="mb-6">
           <CardHeader>
@@ -78,7 +101,10 @@ export function AssessmentResults({ result, onStartOver }: AssessmentResultsProp
                 {getRiskIcon()}
                 <div>
                   <CardTitle className="text-2xl">{result.riskLevel}</CardTitle>
-                  <CardDescription>Eye Health Assessment Result</CardDescription>
+                  <CardDescription>
+                    Eye Health Assessment Result
+                    {result.isMockResult && <span className="ml-2 text-orange-600 font-medium">(Demo)</span>}
+                  </CardDescription>
                 </div>
               </div>
               <Badge variant={getRiskBadgeVariant()} className="text-sm">
@@ -99,13 +125,17 @@ export function AssessmentResults({ result, onStartOver }: AssessmentResultsProp
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Brain className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm font-medium">AI Confidence Score</span>
+                    <span className="text-sm font-medium">
+                      {result.isMockResult ? "Simulated Confidence Score" : "AI Confidence Score"}
+                    </span>
                   </div>
                   <span className="text-sm text-muted-foreground">{confidencePercentage}%</span>
                 </div>
                 <Progress value={confidencePercentage} className="h-2" />
                 <p className="text-xs text-muted-foreground">
-                  This score indicates how confident our AI is in this assessment based on image quality and analysis.
+                  {result.isMockResult
+                    ? "This is a simulated confidence score for demonstration purposes."
+                    : "This score indicates how confident our AI is in this assessment based on image quality and analysis."}
                 </p>
               </div>
             )}
@@ -203,7 +233,9 @@ export function AssessmentResults({ result, onStartOver }: AssessmentResultsProp
             Start New Assessment
           </Button>
           <Button variant="outline" asChild className="flex-1 bg-transparent" size="lg">
-            <a href="mailto:?subject=EyePhone Assessment Results&body=I just completed an eye health assessment for my child using The EyePhone app. The result was: ${result.riskLevel}. ${result.explanation}">
+            <a
+              href={`mailto:?subject=EyePhone Assessment Results&body=I just completed an eye health assessment for my child using The EyePhone app. The result was: ${result.riskLevel}. ${result.explanation}`}
+            >
               Share Results
             </a>
           </Button>
@@ -212,7 +244,9 @@ export function AssessmentResults({ result, onStartOver }: AssessmentResultsProp
         {/* Footer Information */}
         <div className="mt-8 text-center">
           <p className="text-xs text-muted-foreground">
-            Powered by advanced AI technology • Results generated in real-time
+            {result.isMockResult
+              ? "Demo mode • Simulated results for testing purposes"
+              : "Powered by advanced AI technology • Results generated in real-time"}
           </p>
         </div>
       </div>
