@@ -40,6 +40,37 @@ interface AssessmentResult {
     squintingStrain: string
     overallEyeHealth: string
   }
+  technicalMetrics?: {
+    imageQuality: {
+      resolution: string
+      sharpnessScore: number
+      contrastRatio: number
+      brightnessLevel: number
+    }
+    eyeGeometry: {
+      pupilDiameterLeft: number
+      pupilDiameterRight: number
+      pupilAsymmetryRatio: number
+      eyeAlignmentAngle: number
+      interPupillaryDistance: number
+    }
+    riskIndicators: {
+      squintingProbability: number
+      alignmentDeviation: number
+      cornealReflexSymmetry: number
+      focusAccuracy: number
+    }
+    confidenceIntervals: {
+      overallAssessment: {
+        lower: number
+        upper: number
+      }
+      myopiaRisk: {
+        lower: number
+        upper: number
+      }
+    }
+  }
   isMockResult?: boolean
   errorMessage?: string
 }
@@ -51,6 +82,7 @@ interface AssessmentResultsProps {
 
 export function AssessmentResults({ result, onStartOver }: AssessmentResultsProps) {
   const [isDetailedAnalysisOpen, setIsDetailedAnalysisOpen] = useState(false)
+  const [isTechnicalMetricsOpen, setIsTechnicalMetricsOpen] = useState(false)
 
   const getRiskIcon = () => {
     switch (result.riskLevel) {
@@ -213,6 +245,175 @@ export function AssessmentResults({ result, onStartOver }: AssessmentResultsProp
                       <div className="p-3 border rounded-lg bg-muted/20">
                         <h5 className="font-medium text-sm mb-2 text-primary">Overall Eye Health</h5>
                         <p className="text-sm text-muted-foreground">{result.detailedAnalysis.overallEyeHealth}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </CollapsibleContent>
+              </Collapsible>
+            )}
+
+            {/* Technical Metrics Section */}
+            {result.technicalMetrics && (
+              <Collapsible open={isTechnicalMetricsOpen} onOpenChange={setIsTechnicalMetricsOpen}>
+                <CollapsibleTrigger asChild>
+                  <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Target className="h-5 w-5 text-primary" />
+                        <CardTitle className="text-lg">Technical Metrics & Data</CardTitle>
+                      </div>
+                      {isTechnicalMetricsOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                    </div>
+                    <CardDescription>Quantitative analysis and measurements for technical review</CardDescription>
+                  </CardHeader>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <CardContent className="space-y-6 pt-0">
+                    {/* Image Quality Metrics */}
+                    <div className="space-y-3">
+                      <h5 className="font-medium text-sm text-primary border-b pb-1">Image Quality Analysis</h5>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="p-3 border rounded-lg bg-muted/20">
+                          <div className="text-xs text-muted-foreground">Resolution</div>
+                          <div className="font-mono text-sm">{result.technicalMetrics.imageQuality.resolution}</div>
+                        </div>
+                        <div className="p-3 border rounded-lg bg-muted/20">
+                          <div className="text-xs text-muted-foreground">Sharpness Score</div>
+                          <div className="font-mono text-sm">
+                            {result.technicalMetrics.imageQuality.sharpnessScore}/100
+                          </div>
+                        </div>
+                        <div className="p-3 border rounded-lg bg-muted/20">
+                          <div className="text-xs text-muted-foreground">Contrast Ratio</div>
+                          <div className="font-mono text-sm">
+                            {result.technicalMetrics.imageQuality.contrastRatio.toFixed(1)}:1
+                          </div>
+                        </div>
+                        <div className="p-3 border rounded-lg bg-muted/20">
+                          <div className="text-xs text-muted-foreground">Brightness Level</div>
+                          <div className="font-mono text-sm">
+                            {result.technicalMetrics.imageQuality.brightnessLevel}/255
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Eye Geometry Measurements */}
+                    <div className="space-y-3">
+                      <h5 className="font-medium text-sm text-primary border-b pb-1">Eye Geometry Measurements</h5>
+                      <div className="grid grid-cols-1 gap-3">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="p-3 border rounded-lg bg-muted/20">
+                            <div className="text-xs text-muted-foreground">Left Pupil Diameter</div>
+                            <div className="font-mono text-sm">
+                              {result.technicalMetrics.eyeGeometry.pupilDiameterLeft.toFixed(1)} mm
+                            </div>
+                          </div>
+                          <div className="p-3 border rounded-lg bg-muted/20">
+                            <div className="text-xs text-muted-foreground">Right Pupil Diameter</div>
+                            <div className="font-mono text-sm">
+                              {result.technicalMetrics.eyeGeometry.pupilDiameterRight.toFixed(1)} mm
+                            </div>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-3 gap-4">
+                          <div className="p-3 border rounded-lg bg-muted/20">
+                            <div className="text-xs text-muted-foreground">Pupil Asymmetry</div>
+                            <div className="font-mono text-sm">
+                              {result.technicalMetrics.eyeGeometry.pupilAsymmetryRatio.toFixed(2)}
+                            </div>
+                          </div>
+                          <div className="p-3 border rounded-lg bg-muted/20">
+                            <div className="text-xs text-muted-foreground">Alignment Angle</div>
+                            <div className="font-mono text-sm">
+                              {result.technicalMetrics.eyeGeometry.eyeAlignmentAngle.toFixed(1)}°
+                            </div>
+                          </div>
+                          <div className="p-3 border rounded-lg bg-muted/20">
+                            <div className="text-xs text-muted-foreground">IPD</div>
+                            <div className="font-mono text-sm">
+                              {result.technicalMetrics.eyeGeometry.interPupillaryDistance.toFixed(1)} mm
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Risk Indicator Scores */}
+                    <div className="space-y-3">
+                      <h5 className="font-medium text-sm text-primary border-b pb-1">Risk Indicator Scores</h5>
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm">Squinting Probability</span>
+                          <div className="flex items-center gap-2">
+                            <Progress
+                              value={result.technicalMetrics.riskIndicators.squintingProbability}
+                              className="w-20 h-2"
+                            />
+                            <span className="font-mono text-sm w-12">
+                              {result.technicalMetrics.riskIndicators.squintingProbability.toFixed(0)}%
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm">Alignment Deviation</span>
+                          <div className="flex items-center gap-2">
+                            <Progress
+                              value={result.technicalMetrics.riskIndicators.alignmentDeviation}
+                              className="w-20 h-2"
+                            />
+                            <span className="font-mono text-sm w-12">
+                              {result.technicalMetrics.riskIndicators.alignmentDeviation.toFixed(0)}%
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm">Corneal Reflex Symmetry</span>
+                          <div className="flex items-center gap-2">
+                            <Progress
+                              value={result.technicalMetrics.riskIndicators.cornealReflexSymmetry}
+                              className="w-20 h-2"
+                            />
+                            <span className="font-mono text-sm w-12">
+                              {result.technicalMetrics.riskIndicators.cornealReflexSymmetry.toFixed(0)}%
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm">Focus Accuracy</span>
+                          <div className="flex items-center gap-2">
+                            <Progress
+                              value={result.technicalMetrics.riskIndicators.focusAccuracy}
+                              className="w-20 h-2"
+                            />
+                            <span className="font-mono text-sm w-12">
+                              {result.technicalMetrics.riskIndicators.focusAccuracy.toFixed(0)}%
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Confidence Intervals */}
+                    <div className="space-y-3">
+                      <h5 className="font-medium text-sm text-primary border-b pb-1">
+                        Statistical Confidence Intervals
+                      </h5>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="p-3 border rounded-lg bg-muted/20">
+                          <div className="text-xs text-muted-foreground">Overall Assessment (95% CI)</div>
+                          <div className="font-mono text-sm">
+                            {result.technicalMetrics.confidenceIntervals.overallAssessment.lower.toFixed(0)}% -{" "}
+                            {result.technicalMetrics.confidenceIntervals.overallAssessment.upper.toFixed(0)}%
+                          </div>
+                        </div>
+                        <div className="p-3 border rounded-lg bg-muted/20">
+                          <div className="text-xs text-muted-foreground">Myopia Risk (95% CI)</div>
+                          <div className="font-mono text-sm">
+                            {result.technicalMetrics.confidenceIntervals.myopiaRisk.lower.toFixed(0)}% -{" "}
+                            {result.technicalMetrics.confidenceIntervals.myopiaRisk.upper.toFixed(0)}%
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </CardContent>

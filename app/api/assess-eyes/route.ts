@@ -17,6 +17,37 @@ const AssessmentSchema = z.object({
     squintingStrain: z.string(),
     overallEyeHealth: z.string(),
   }),
+  technicalMetrics: z.object({
+    imageQuality: z.object({
+      resolution: z.string(),
+      sharpnessScore: z.number().min(0).max(100),
+      contrastRatio: z.number().min(0).max(10),
+      brightnessLevel: z.number().min(0).max(255),
+    }),
+    eyeGeometry: z.object({
+      pupilDiameterLeft: z.number().min(0).max(20),
+      pupilDiameterRight: z.number().min(0).max(20),
+      pupilAsymmetryRatio: z.number().min(0).max(2),
+      eyeAlignmentAngle: z.number().min(-45).max(45),
+      interPupillaryDistance: z.number().min(40).max(80),
+    }),
+    riskIndicators: z.object({
+      squintingProbability: z.number().min(0).max(100),
+      alignmentDeviation: z.number().min(0).max(100),
+      cornealReflexSymmetry: z.number().min(0).max(100),
+      focusAccuracy: z.number().min(0).max(100),
+    }),
+    confidenceIntervals: z.object({
+      overallAssessment: z.object({
+        lower: z.number().min(0).max(100),
+        upper: z.number().min(0).max(100),
+      }),
+      myopiaRisk: z.object({
+        lower: z.number().min(0).max(100),
+        upper: z.number().min(0).max(100),
+      }),
+    }),
+  }),
 })
 
 export async function POST(request: NextRequest) {
@@ -75,6 +106,32 @@ For each criterion, provide specific observations:
 4. Squinting/Strain: Look for signs of difficulty focusing, partial eye closure, or strain
 5. Overall Eye Health: Note any other visible abnormalities, inflammation, or concerns
 
+TECHNICAL METRICS REQUIRED:
+Provide quantitative measurements and analysis:
+
+IMAGE QUALITY METRICS:
+- resolution: Describe image dimensions and quality (e.g., "1920x1080, High Quality")
+- sharpnessScore: Rate image sharpness 0-100 (higher = sharper)
+- contrastRatio: Measure contrast 0-10 (higher = better contrast)
+- brightnessLevel: Average brightness 0-255 (128 = optimal)
+
+EYE GEOMETRY MEASUREMENTS:
+- pupilDiameterLeft: Estimated pupil diameter in mm (2-8mm typical)
+- pupilDiameterRight: Estimated pupil diameter in mm (2-8mm typical)
+- pupilAsymmetryRatio: Left/Right pupil size ratio (1.0 = perfect symmetry)
+- eyeAlignmentAngle: Deviation from horizontal in degrees (0 = perfect alignment)
+- interPupillaryDistance: Distance between pupils in mm (50-70mm typical for children)
+
+RISK INDICATOR SCORES (0-100%):
+- squintingProbability: Likelihood of squinting behavior detected
+- alignmentDeviation: Degree of eye misalignment detected
+- cornealReflexSymmetry: Symmetry of corneal light reflexes
+- focusAccuracy: Apparent focusing ability assessment
+
+CONFIDENCE INTERVALS:
+- overallAssessment: Lower and upper bounds for overall confidence
+- myopiaRisk: Lower and upper bounds for myopia risk specifically
+
 RESPONSE FORMAT REQUIREMENTS:
 - riskLevel: Must be exactly "Low Risk", "Medium Risk", or "High Risk"
 - explanation: Overall summary of findings (minimum 50 characters)
@@ -83,6 +140,7 @@ RESPONSE FORMAT REQUIREMENTS:
 - recommendations: Array of specific actionable recommendations
 - visualAidSuggestions: Array of what to look for in the photo (e.g., "Notice the left eye alignment", "Observe pupil size difference")
 - detailedAnalysis: Object with specific findings for each criterion
+- technicalMetrics: Object with all quantitative measurements and scores
 
 RISK LEVELS:
 - Low Risk: Normal findings across all criteria, symmetric features
@@ -92,7 +150,7 @@ RISK LEVELS:
 ${childAge ? `Child's age: ${childAge} years` : ""}
 ${additionalNotes ? `Additional notes: ${additionalNotes}` : ""}
 
-IMPORTANT: Provide detailed, scientific observations while maintaining accessibility for parents.`,
+IMPORTANT: Provide realistic quantitative measurements based on visual analysis. Be precise with numerical values while maintaining medical accuracy.`,
             },
             {
               type: "image",
@@ -115,6 +173,7 @@ IMPORTANT: Provide detailed, scientific observations while maintaining accessibi
       recommendations: result.object.recommendations,
       visualAidSuggestions: result.object.visualAidSuggestions,
       detailedAnalysis: result.object.detailedAnalysis,
+      technicalMetrics: result.object.technicalMetrics,
       isMockResult: false,
     })
   } catch (error) {
