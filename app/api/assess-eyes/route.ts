@@ -128,9 +128,21 @@ RISK INDICATOR SCORES (0-100%):
 - cornealReflexSymmetry: Symmetry of corneal light reflexes
 - focusAccuracy: Apparent focusing ability assessment
 
-CONFIDENCE INTERVALS:
-- overallAssessment: Lower and upper bounds for overall confidence
-- myopiaRisk: Lower and upper bounds for myopia risk specifically
+CONFIDENCE INTERVALS (CRITICAL - PROVIDE REALISTIC RANGES):
+- overallAssessment: Provide a realistic confidence range for the overall assessment
+  * Low Risk cases: typically 75-95% confidence range
+  * Medium Risk cases: typically 60-85% confidence range  
+  * High Risk cases: typically 70-90% confidence range
+- myopiaRisk: Provide a realistic confidence range for myopia risk specifically
+  * Low myopia risk: typically 5-25% risk range
+  * Medium myopia risk: typically 25-65% risk range
+  * High myopia risk: typically 60-85% risk range
+
+EXAMPLE CONFIDENCE INTERVALS:
+- For Low Risk overall: lower: 78, upper: 92
+- For Medium Risk overall: lower: 65, upper: 82
+- For Low myopia risk: lower: 8, upper: 22
+- For Medium myopia risk: lower: 35, upper: 58
 
 RESPONSE FORMAT REQUIREMENTS:
 - riskLevel: Must be exactly "Low Risk", "Medium Risk", or "High Risk"
@@ -150,7 +162,7 @@ RISK LEVELS:
 ${childAge ? `Child's age: ${childAge} years` : ""}
 ${additionalNotes ? `Additional notes: ${additionalNotes}` : ""}
 
-IMPORTANT: Provide realistic quantitative measurements based on visual analysis. Be precise with numerical values while maintaining medical accuracy.`,
+IMPORTANT: Provide realistic quantitative measurements based on visual analysis. Be precise with numerical values while maintaining medical accuracy. Confidence intervals must show meaningful ranges, not identical values.`,
             },
             {
               type: "image",
