@@ -1,8 +1,3 @@
-// Mock AI Assessment Service
-// This module provides a placeholder backend that can be easily replaced with a real AI service
-
-import { generateObject } from "ai"
-import { openai } from "@ai-sdk/openai"
 import { z } from "zod"
 
 export interface AssessmentResult {
@@ -83,10 +78,7 @@ const AssessmentSchema = z.object({
 })
 
 /**
- * Real AI Assessment Service using OpenAI GPT-4 Vision
- *
- * Analyzes eye photos for myopia and other eye health concerns
- * based on the research outlined in the EyePhone pitch deck.
+ * Real AI Assessment Service using server-side API
  */
 export async function performEyeAssessment(request: AssessmentRequest): Promise<AssessmentResult> {
   console.log("[v0] Starting real AI assessment...")
@@ -96,71 +88,35 @@ export async function performEyeAssessment(request: AssessmentRequest): Promise<
     throw new Error("No images provided for assessment")
   }
 
-  // For now, analyze the first image (can be extended to multiple images later)
+  // For now, analyze the first image
   const imageToAnalyze = request.images[0]
 
   try {
-    // Convert image to base64 for AI analysis
-    const imageBase64 = await convertImageToBase64(imageToAnalyze)
+    const formData = new FormData()
+    formData.append("image", imageToAnalyze)
+    if (request.childAge) {
+      formData.append("childAge", request.childAge.toString())
+    }
+    if (request.additionalNotes) {
+      formData.append("additionalNotes", request.additionalNotes)
+    }
 
-    console.log("[v0] Image converted to base64, sending to AI...")
+    console.log("[v0] Sending request to server API...")
 
-    const result = await generateObject({
-      model: openai("gpt-4o"),
-      messages: [
-        {
-          role: "user",
-          content: [
-            {
-              type: "text",
-              text: `You are a pediatric eye health screening AI assistant. Analyze this photo for signs of myopia and other eye conditions in children.
-
-IMPORTANT MEDICAL CONTEXT:
-- Look for subtle markers like squinting, abnormal eye alignment, reduced corneal clarity
-- Check for asymmetric pupil response, eye positioning, and focus patterns
-- Consider signs of refractive errors, strabismus, or amblyopia
-- Base assessment on research showing 80% accuracy for myopia detection from photos
-
-ANALYSIS CRITERIA:
-1. Eye Alignment: Check for proper coordination and symmetry
-2. Pupil Response: Look for size, shape, and light reflex symmetry  
-3. Corneal Clarity: Assess transparency and reflection patterns
-4. Squinting/Strain: Signs of difficulty focusing or seeing clearly
-5. Overall Eye Health: Any visible abnormalities or concerns
-
-RISK LEVELS:
-- Low Risk: Normal eye alignment, symmetric pupils, no concerning features
-- Medium Risk: Minor asymmetries, possible early signs requiring monitoring
-- High Risk: Significant misalignment, clear abnormalities requiring immediate attention
-
-Provide a confidence score based on image quality and clarity of findings.
-
-${request.childAge ? `Child's age: ${request.childAge} years` : ""}
-${request.additionalNotes ? `Additional notes: ${request.additionalNotes}` : ""}
-
-IMPORTANT: This is a screening tool only. Always recommend professional evaluation for any concerns.`,
-            },
-            {
-              type: "image",
-              image: imageBase64,
-            },
-          ],
-        },
-      ],
-      schema: AssessmentSchema,
-      temperature: 0.3, // Lower temperature for more consistent medical assessments
+    const response = await fetch("/api/assess-eyes", {
+      method: "POST",
+      body: formData,
     })
 
+    if (!response.ok) {
+      const errorData = await response.json()
+      throw new Error(errorData.error || "Server error")
+    }
+
+    const result = await response.json()
     console.log("[v0] AI assessment completed successfully")
 
-    return {
-      riskLevel: result.object.riskLevel,
-      explanation: result.object.explanation,
-      callToAction: result.object.callToAction,
-      confidence: Math.round(result.object.confidence * 100) / 100,
-      detectedFeatures: result.object.detectedFeatures,
-      isMockResult: false,
-    }
+    return result
   } catch (error) {
     console.error("[v0] AI assessment failed:", error)
 
