@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import {
   CheckCircle,
   AlertTriangle,
@@ -15,7 +16,14 @@ import {
   Eye,
   Brain,
   AlertCircle,
+  ChevronDown,
+  ChevronUp,
+  Microscope,
+  Target,
+  Lightbulb,
+  CheckSquare,
 } from "lucide-react"
+import { useState } from "react"
 
 interface AssessmentResult {
   riskLevel: "Low Risk" | "Medium Risk" | "High Risk"
@@ -23,6 +31,15 @@ interface AssessmentResult {
   callToAction?: string
   confidence?: number
   detectedFeatures?: string[]
+  recommendations?: string[]
+  visualAidSuggestions?: string[]
+  detailedAnalysis?: {
+    eyeAlignment: string
+    pupilResponse: string
+    cornealClarity: string
+    squintingStrain: string
+    overallEyeHealth: string
+  }
   isMockResult?: boolean
   errorMessage?: string
 }
@@ -33,6 +50,8 @@ interface AssessmentResultsProps {
 }
 
 export function AssessmentResults({ result, onStartOver }: AssessmentResultsProps) {
+  const [isDetailedAnalysisOpen, setIsDetailedAnalysisOpen] = useState(false)
+
   const getRiskIcon = () => {
     switch (result.riskLevel) {
       case "Low Risk":
@@ -129,9 +148,9 @@ export function AssessmentResults({ result, onStartOver }: AssessmentResultsProp
                       {result.isMockResult ? "Simulated Confidence Score" : "AI Confidence Score"}
                     </span>
                   </div>
-                  <span className="text-sm text-muted-foreground">{confidencePercentage}%</span>
+                  <span className="text-sm font-semibold">{confidencePercentage}%</span>
                 </div>
-                <Progress value={confidencePercentage} className="h-2" />
+                <Progress value={confidencePercentage} className="h-3" />
                 <p className="text-xs text-muted-foreground">
                   {result.isMockResult
                     ? "This is a simulated confidence score for demonstration purposes."
@@ -143,7 +162,10 @@ export function AssessmentResults({ result, onStartOver }: AssessmentResultsProp
             {/* Detected Features */}
             {result.detectedFeatures && result.detectedFeatures.length > 0 && (
               <div className="space-y-3">
-                <h4 className="font-medium text-sm">Key Observations:</h4>
+                <h4 className="font-medium text-sm flex items-center gap-2">
+                  <Target className="h-4 w-4" />
+                  Key Observations:
+                </h4>
                 <div className="flex flex-wrap gap-2">
                   {result.detectedFeatures.map((feature, index) => (
                     <Badge key={index} variant="outline" className="text-xs">
@@ -153,11 +175,124 @@ export function AssessmentResults({ result, onStartOver }: AssessmentResultsProp
                 </div>
               </div>
             )}
+
+            {/* Detailed Scientific Analysis */}
+            {result.detailedAnalysis && (
+              <Collapsible open={isDetailedAnalysisOpen} onOpenChange={setIsDetailedAnalysisOpen}>
+                <CollapsibleTrigger asChild>
+                  <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Microscope className="h-5 w-5 text-primary" />
+                        <CardTitle className="text-lg">Detailed Scientific Analysis</CardTitle>
+                      </div>
+                      {isDetailedAnalysisOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                    </div>
+                    <CardDescription>Comprehensive breakdown of eye health criteria assessment</CardDescription>
+                  </CardHeader>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <CardContent className="space-y-4 pt-0">
+                    <div className="grid gap-4">
+                      <div className="p-3 border rounded-lg bg-muted/20">
+                        <h5 className="font-medium text-sm mb-2 text-primary">Eye Alignment</h5>
+                        <p className="text-sm text-muted-foreground">{result.detailedAnalysis.eyeAlignment}</p>
+                      </div>
+                      <div className="p-3 border rounded-lg bg-muted/20">
+                        <h5 className="font-medium text-sm mb-2 text-primary">Pupil Response</h5>
+                        <p className="text-sm text-muted-foreground">{result.detailedAnalysis.pupilResponse}</p>
+                      </div>
+                      <div className="p-3 border rounded-lg bg-muted/20">
+                        <h5 className="font-medium text-sm mb-2 text-primary">Corneal Clarity</h5>
+                        <p className="text-sm text-muted-foreground">{result.detailedAnalysis.cornealClarity}</p>
+                      </div>
+                      <div className="p-3 border rounded-lg bg-muted/20">
+                        <h5 className="font-medium text-sm mb-2 text-primary">Squinting/Strain</h5>
+                        <p className="text-sm text-muted-foreground">{result.detailedAnalysis.squintingStrain}</p>
+                      </div>
+                      <div className="p-3 border rounded-lg bg-muted/20">
+                        <h5 className="font-medium text-sm mb-2 text-primary">Overall Eye Health</h5>
+                        <p className="text-sm text-muted-foreground">{result.detailedAnalysis.overallEyeHealth}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </CollapsibleContent>
+              </Collapsible>
+            )}
           </CardContent>
         </Card>
 
-        {/* Call to Action */}
-        {result.callToAction && (
+        {result.recommendations && result.recommendations.length > 0 && (
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <CheckSquare className="h-5 w-5 text-primary" />
+                Actionable Recommendations
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-2">
+                {result.recommendations.map((recommendation, index) => (
+                  <li key={index} className="flex items-start gap-2 text-sm">
+                    <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                    <span>{recommendation}</span>
+                  </li>
+                ))}
+              </ul>
+              <div className="flex flex-col sm:flex-row gap-3 mt-4">
+                <Button asChild className="flex-1">
+                  <a
+                    href="https://1001optometry.com/book-appointment"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2"
+                  >
+                    Book an Appointment
+                    <ExternalLink className="h-4 w-4" />
+                  </a>
+                </Button>
+                <Button variant="outline" asChild className="flex-1 bg-transparent">
+                  <a
+                    href="https://1001optometry.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2"
+                  >
+                    Learn More at 1001 Optometry
+                    <ExternalLink className="h-4 w-4" />
+                  </a>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {result.visualAidSuggestions && result.visualAidSuggestions.length > 0 && (
+          <Card className="mb-6 border-blue-200 bg-blue-50/50">
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2 text-blue-800">
+                <Lightbulb className="h-5 w-5" />
+                What to Look For
+              </CardTitle>
+              <CardDescription className="text-blue-700">
+                Visual indicators you can observe in the photo
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-2">
+                {result.visualAidSuggestions.map((suggestion, index) => (
+                  <li key={index} className="flex items-start gap-2 text-sm text-blue-700">
+                    <Eye className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                    <span>{suggestion}</span>
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Call to Action - Fallback for older results */}
+        {result.callToAction && (!result.recommendations || result.recommendations.length === 0) && (
           <Card className="mb-6">
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
