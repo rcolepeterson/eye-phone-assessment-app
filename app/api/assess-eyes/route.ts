@@ -64,21 +64,62 @@ export async function OPTIONS(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const formData = await request.formData()
-    const image = formData.get("image") as File
-    const childAge = formData.get("childAge") as string
-    const additionalNotes = formData.get("additionalNotes") as string
+    const contentType = request.headers.get("content-type") || ""
 
-    if (!image) {
-      return NextResponse.json(
-        { error: "No image provided" },
-        {
-          status: 400,
-          headers: {
-            "Access-Control-Allow-Origin": process.env.ALLOWED_ORIGIN || "*",
+    let base64Image: string
+    let childAge: string | null = null
+    let additionalNotes: string | null = null
+
+    if (contentType.includes("application/json")) {
+      // Handle JSON with base64 image
+      const body = await request.json()
+      const imageData = body.image
+
+      if (!imageData) {
+        return NextResponse.json(
+          { error: "No image provided" },
+          {
+            status: 400,
+            headers: {
+              "Access-Control-Allow-Origin": process.env.ALLOWED_ORIGIN || "*",
+            },
           },
-        },
-      )
+        )
+      }
+
+      // Extract base64 from data URL if needed
+      if (imageData.startsWith("data:")) {
+        base64Image = imageData.split(",")[1]
+      } else {
+        base64Image = imageData
+      }
+
+      childAge = body.childAge || null
+      additionalNotes = body.additionalNotes || null
+    } else {
+      // Handle FormData
+      const formData = await request.formData()
+      const image = formData.get("image") as File
+
+      if (!image) {
+        return NextResponse.json(
+          { error: "No image provided" },
+          {
+            status: 400,
+            headers: {
+              "Access-Control-Allow-Origin": process.env.ALLOWED_ORIGIN || "*",
+            },
+          },
+        )
+      }
+
+      // Convert image to base64
+      const bytes = await image.arrayBuffer()
+      const buffer = Buffer.from(bytes)
+      base64Image = buffer.toString("base64")
+
+      childAge = formData.get("childAge") as string
+      additionalNotes = formData.get("additionalNotes") as string
     }
 
     const apiKey = process.env.OPENAI_API_KEY
@@ -97,11 +138,6 @@ export async function POST(request: NextRequest) {
         },
       )
     }
-
-    // Convert image to base64
-    const bytes = await image.arrayBuffer()
-    const buffer = Buffer.from(bytes)
-    const base64 = buffer.toString("base64")
 
     console.log("[API] Processing eye assessment...")
 
@@ -190,7 +226,7 @@ IMPORTANT: Provide realistic quantitative measurements based on visual analysis.
             },
             {
               type: "image",
-              image: base64,
+              image: base64Image,
             },
           ],
         },
