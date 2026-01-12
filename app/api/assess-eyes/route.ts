@@ -29,7 +29,7 @@ const AssessmentSchema = z.object({
       pupilDiameterRight: z.number().min(0).max(20),
       pupilAsymmetryRatio: z.number().min(0).max(2),
       eyeAlignmentAngle: z.number().min(-45).max(45),
-      interPupillaryDistance: z.number().min(40).max(80),
+      interPupillaryDistance: z.number().min(0).max(80),
     }),
     riskIndicators: z.object({
       squintingProbability: z.number().min(0).max(100),
