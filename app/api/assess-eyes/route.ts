@@ -50,6 +50,18 @@ const AssessmentSchema = z.object({
   }),
 })
 
+export async function OPTIONS(request: NextRequest) {
+  return new NextResponse(null, {
+    status: 200,
+    headers: {
+      "Access-Control-Allow-Origin": process.env.ALLOWED_ORIGIN || "*",
+      "Access-Control-Allow-Methods": "POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization",
+      "Access-Control-Max-Age": "86400",
+    },
+  })
+}
+
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData()
@@ -58,19 +70,31 @@ export async function POST(request: NextRequest) {
     const additionalNotes = formData.get("additionalNotes") as string
 
     if (!image) {
-      return NextResponse.json({ error: "No image provided" }, { status: 400 })
+      return NextResponse.json(
+        { error: "No image provided" },
+        {
+          status: 400,
+          headers: {
+            "Access-Control-Allow-Origin": process.env.ALLOWED_ORIGIN || "*",
+          },
+        },
+      )
     }
 
-    // Check if OpenAI API key is available
     const apiKey = process.env.OPENAI_API_KEY
     if (!apiKey) {
-      console.log("[v0] Server: No OpenAI API key found")
+      console.log("[API] No OpenAI API key found")
       return NextResponse.json(
         {
           error: "OpenAI API key not configured",
           isMockResult: true,
         },
-        { status: 500 },
+        {
+          status: 500,
+          headers: {
+            "Access-Control-Allow-Origin": process.env.ALLOWED_ORIGIN || "*",
+          },
+        },
       )
     }
 
@@ -79,7 +103,7 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(bytes)
     const base64 = buffer.toString("base64")
 
-    console.log("[v0] Server: Processing AI assessment...")
+    console.log("[API] Processing eye assessment...")
 
     const result = await generateObject({
       model: openai("gpt-4o"),
@@ -148,9 +172,9 @@ RESPONSE FORMAT REQUIREMENTS:
 - riskLevel: Must be exactly "Low Risk", "Medium Risk", or "High Risk"
 - explanation: Overall summary of findings (minimum 50 characters)
 - confidence: Number between 0 and 1 representing assessment confidence
-- detectedFeatures: Array of specific observable features (e.g., "Mild asymmetric pupils", "Slight squinting")
+- detectedFeatures: Array of specific observable features
 - recommendations: Array of specific actionable recommendations
-- visualAidSuggestions: Array of what to look for in the photo (e.g., "Notice the left eye alignment", "Observe pupil size difference")
+- visualAidSuggestions: Array of what to look for in the photo
 - detailedAnalysis: Object with specific findings for each criterion
 - technicalMetrics: Object with all quantitative measurements and scores
 
@@ -175,21 +199,28 @@ IMPORTANT: Provide realistic quantitative measurements based on visual analysis.
       temperature: 0.3,
     })
 
-    console.log("[v0] Server: AI assessment completed successfully")
+    console.log("[API] Assessment completed successfully")
 
-    return NextResponse.json({
-      riskLevel: result.object.riskLevel,
-      explanation: result.object.explanation,
-      confidence: Math.round(result.object.confidence * 100) / 100,
-      detectedFeatures: result.object.detectedFeatures,
-      recommendations: result.object.recommendations,
-      visualAidSuggestions: result.object.visualAidSuggestions,
-      detailedAnalysis: result.object.detailedAnalysis,
-      technicalMetrics: result.object.technicalMetrics,
-      isMockResult: false,
-    })
+    return NextResponse.json(
+      {
+        riskLevel: result.object.riskLevel,
+        explanation: result.object.explanation,
+        confidence: Math.round(result.object.confidence * 100) / 100,
+        detectedFeatures: result.object.detectedFeatures,
+        recommendations: result.object.recommendations,
+        visualAidSuggestions: result.object.visualAidSuggestions,
+        detailedAnalysis: result.object.detailedAnalysis,
+        technicalMetrics: result.object.technicalMetrics,
+        isMockResult: false,
+      },
+      {
+        headers: {
+          "Access-Control-Allow-Origin": process.env.ALLOWED_ORIGIN || "*",
+        },
+      },
+    )
   } catch (error) {
-    console.error("[v0] Server: AI assessment failed:", error)
+    console.error("[API] Assessment failed:", error)
 
     let errorMessage = "AI service temporarily unavailable"
     if (error instanceof Error) {
@@ -205,7 +236,12 @@ IMPORTANT: Provide realistic quantitative measurements based on visual analysis.
         error: errorMessage,
         isMockResult: true,
       },
-      { status: 500 },
+      {
+        status: 500,
+        headers: {
+          "Access-Control-Allow-Origin": process.env.ALLOWED_ORIGIN || "*",
+        },
+      },
     )
   }
 }

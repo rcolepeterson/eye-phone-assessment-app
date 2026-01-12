@@ -11,8 +11,8 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  title: "The EyePhone - Child Eye Health Assessment",
-  description: "AI-powered eye health assessment for children through photo analysis",
+  title: "EyePhone API Service - Pediatric Eye Health Assessment",
+  description: "Standalone API service for AI-powered pediatric eye health assessment using GPT-4 Vision",
   generator: "v0.app",
 }
 

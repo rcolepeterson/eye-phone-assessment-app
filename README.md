@@ -1,30 +1,123 @@
-# EyePhone assessment app
+# EyePhone API Service
 
-*Automatically synced with your [v0.app](https://v0.app) deployments*
-
-[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com/vml-americas/v0-eye-phone-assessment-app)
-[![Built with v0](https://img.shields.io/badge/Built%20with-v0.app-black?style=for-the-badge)](https://v0.app/chat/projects/FhXCqqysccJ)
+A standalone Next.js API service for AI-powered pediatric eye health assessment using GPT-4 Vision.
 
 ## Overview
 
-This repository will stay in sync with your deployed chats on [v0.app](https://v0.app).
-Any changes you make to your deployed app will be automatically pushed to this repository from [v0.app](https://v0.app).
+This is a clean, production-ready API service that can be called from any frontend application (Vite, React, Vue, etc.). It provides comprehensive eye health assessments with detailed medical analysis and technical metrics.
+
+## Features
+
+- **GPT-4 Vision Analysis**: Advanced AI-powered eye health assessment
+- **Detailed Medical Reports**: Risk levels, recommendations, and detailed analysis
+- **Technical Metrics**: Quantitative measurements including pupil diameter, alignment angles, and confidence intervals
+- **CORS Support**: Configurable cross-origin resource sharing
+- **Health Check Endpoint**: Monitor service availability
+
+## Quick Start
+
+### 1. Install Dependencies
+
+```bash
+npm install
+```
+
+### 2. Set Environment Variables
+
+Create `.env.local`:
+
+```env
+OPENAI_API_KEY=sk-your-openai-api-key-here
+ALLOWED_ORIGIN=http://localhost:5173
+```
+
+### 3. Run Development Server
+
+```bash
+npm run dev
+```
+
+API will be available at `http://localhost:3000`
+
+## API Endpoints
+
+### POST /api/assess-eyes
+
+Analyzes eye photos and returns detailed health assessment.
+
+**Request:**
+- Method: `POST`
+- Content-Type: `multipart/form-data`
+- Body:
+  - `image` (File, required): Eye photo
+  - `childAge` (string, optional): Child's age
+  - `additionalNotes` (string, optional): Additional context
+
+**Response:**
+```json
+{
+  "riskLevel": "Low Risk" | "Medium Risk" | "High Risk",
+  "explanation": "string",
+  "confidence": 0.85,
+  "detectedFeatures": ["string"],
+  "recommendations": ["string"],
+  "detailedAnalysis": {...},
+  "technicalMetrics": {...}
+}
+```
+
+### GET /api/health
+
+Health check endpoint.
+
+**Response:**
+```json
+{
+  "status": "healthy",
+  "service": "EyePhone API Service",
+  "version": "1.0.0"
+}
+```
+
+## Integration Guide
+
+See [API_SERVICE_GUIDE.md](./API_SERVICE_GUIDE.md) for complete integration instructions for your Vite frontend.
 
 ## Deployment
 
-Your project is live at:
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed deployment instructions to Vercel.
 
-**[https://vercel.com/vml-americas/v0-eye-phone-assessment-app](https://vercel.com/vml-americas/v0-eye-phone-assessment-app)**
+### Quick Deploy to Vercel
 
-## Build your app
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new)
 
-Continue building your app on:
+1. Click the button above
+2. Set environment variables:
+   - `OPENAI_API_KEY`: Your OpenAI API key
+   - `ALLOWED_ORIGIN`: Your frontend URL
+3. Deploy
 
-**[https://v0.app/chat/projects/FhXCqqysccJ](https://v0.app/chat/projects/FhXCqqysccJ)**
+## Environment Variables
 
-## How It Works
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `OPENAI_API_KEY` | Yes | Your OpenAI API key |
+| `ALLOWED_ORIGIN` | No | CORS allowed origin (defaults to *) |
 
-1. Create and modify your project using [v0.app](https://v0.app)
-2. Deploy your chats from the v0 interface
-3. Changes are automatically pushed to this repository
-4. Vercel deploys the latest version from this repository
+## Documentation
+
+- [API Service Guide](./API_SERVICE_GUIDE.md) - Integration guide for Vite apps
+- [Deployment Guide](./DEPLOYMENT.md) - Complete deployment instructions
+- [Photo Upload Implementation](./PHOTO_UPLOAD_IMPLEMENTATION.md) - Camera/upload documentation
+
+## Tech Stack
+
+- Next.js 14.2.35
+- TypeScript
+- OpenAI GPT-4 Vision (via Vercel AI SDK)
+- Zod for schema validation
+- Tailwind CSS
+
+## License
+
+MIT
