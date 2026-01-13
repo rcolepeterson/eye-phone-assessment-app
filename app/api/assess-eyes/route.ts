@@ -49,15 +49,35 @@ const AssessmentSchema = z.object({
   }),
 })
 
-export async function OPTIONS(request: NextRequest) {
-  return new NextResponse(null, {
-    status: 200,
-    headers: {
-      "Access-Control-Allow-Origin": process.env.ALLOWED_ORIGIN || "*",
+function getCorsHeaders(request: NextRequest) {
+  const origin = request.headers.get("origin") || ""
+  const allowedOrigins = (process.env.ALLOWED_ORIGIN || "*").split(",").map((o) => o.trim())
+
+  // If wildcard, allow any origin
+  if (allowedOrigins.includes("*")) {
+    return {
+      "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Methods": "POST, OPTIONS",
       "Access-Control-Allow-Headers": "Content-Type, Authorization",
       "Access-Control-Max-Age": "86400",
-    },
+    }
+  }
+
+  // Check if request origin is in allowed list
+  const allowedOrigin = allowedOrigins.find((allowed) => allowed === origin)
+
+  return {
+    "Access-Control-Allow-Origin": allowedOrigin || allowedOrigins[0],
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization",
+    "Access-Control-Max-Age": "86400",
+  }
+}
+
+export async function OPTIONS(request: NextRequest) {
+  return new NextResponse(null, {
+    status: 200,
+    headers: getCorsHeaders(request),
   })
 }
 
@@ -79,9 +99,7 @@ export async function POST(request: NextRequest) {
           { error: "No image provided" },
           {
             status: 400,
-            headers: {
-              "Access-Control-Allow-Origin": process.env.ALLOWED_ORIGIN || "*",
-            },
+            headers: getCorsHeaders(request),
           },
         )
       }
@@ -105,9 +123,7 @@ export async function POST(request: NextRequest) {
           { error: "No image provided" },
           {
             status: 400,
-            headers: {
-              "Access-Control-Allow-Origin": process.env.ALLOWED_ORIGIN || "*",
-            },
+            headers: getCorsHeaders(request),
           },
         )
       }
@@ -131,9 +147,7 @@ export async function POST(request: NextRequest) {
         },
         {
           status: 500,
-          headers: {
-            "Access-Control-Allow-Origin": process.env.ALLOWED_ORIGIN || "*",
-          },
+          headers: getCorsHeaders(request),
         },
       )
     }
@@ -246,9 +260,7 @@ IMPORTANT: You must respond with ONLY valid JSON in this exact format, no additi
         isMockResult: false,
       },
       {
-        headers: {
-          "Access-Control-Allow-Origin": process.env.ALLOWED_ORIGIN || "*",
-        },
+        headers: getCorsHeaders(request),
       },
     )
   } catch (error) {
@@ -270,9 +282,7 @@ IMPORTANT: You must respond with ONLY valid JSON in this exact format, no additi
       },
       {
         status: 500,
-        headers: {
-          "Access-Control-Allow-Origin": process.env.ALLOWED_ORIGIN || "*",
-        },
+        headers: getCorsHeaders(request),
       },
     )
   }
