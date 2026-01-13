@@ -1,6 +1,6 @@
 # EyePhone API Service
 
-A standalone Next.js API service for AI-powered pediatric eye health assessment using GPT-4 Vision.
+A standalone Next.js API service for AI-powered pediatric eye health assessment using Google Gemini 2.0 Flash.
 
 ## Overview
 
@@ -8,7 +8,7 @@ This is a clean, production-ready API service that can be called from any fronte
 
 ## Features
 
-- **GPT-4 Vision Analysis**: Advanced AI-powered eye health assessment
+- **Google Gemini 2.0 Flash**: Advanced AI-powered eye health assessment with latest multimodal capabilities
 - **Detailed Medical Reports**: Risk levels, recommendations, and detailed analysis
 - **Technical Metrics**: Quantitative measurements including pupil diameter, alignment angles, and confidence intervals
 - **CORS Support**: Configurable cross-origin resource sharing
@@ -27,7 +27,7 @@ npm install
 Create `.env.local`:
 
 ```env
-OPENAI_API_KEY=sk-your-openai-api-key-here
+GOOGLE_GENERATIVE_AI_API_KEY=your-google-api-key-here
 ALLOWED_ORIGIN=http://localhost:5173
 ```
 
@@ -47,8 +47,16 @@ Analyzes eye photos and returns detailed health assessment.
 
 **Request:**
 - Method: `POST`
-- Content-Type: `multipart/form-data`
-- Body:
+- Content-Type: `application/json` or `multipart/form-data`
+- Body (JSON):
+  ```json
+  {
+    "image": "data:image/jpeg;base64,...",
+    "childAge": "6",
+    "additionalNotes": "optional notes"
+  }
+  ```
+- Body (FormData):
   - `image` (File, required): Eye photo
   - `childAge` (string, optional): Child's age
   - `additionalNotes` (string, optional): Additional context
@@ -93,7 +101,7 @@ See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed deployment instructions to Ver
 
 1. Click the button above
 2. Set environment variables:
-   - `OPENAI_API_KEY`: Your OpenAI API key
+   - `GOOGLE_GENERATIVE_AI_API_KEY`: Your Google AI API key
    - `ALLOWED_ORIGIN`: Your frontend URL
 3. Deploy
 
@@ -101,7 +109,7 @@ See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed deployment instructions to Ver
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `OPENAI_API_KEY` | Yes | Your OpenAI API key |
+| `GOOGLE_GENERATIVE_AI_API_KEY` | Yes | Your Google AI API key for Gemini |
 | `ALLOWED_ORIGIN` | No | CORS allowed origin (defaults to *) |
 
 ## Documentation
@@ -114,7 +122,7 @@ See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed deployment instructions to Ver
 
 - Next.js 14.2.35
 - TypeScript
-- OpenAI GPT-4 Vision (via Vercel AI SDK)
+- Google Gemini 2.0 Flash (via Vercel AI SDK)
 - Zod for schema validation
 - Tailwind CSS
 

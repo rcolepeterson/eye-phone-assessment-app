@@ -1,7 +1,33 @@
+"use client"
+
+import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Eye, Code, Zap, Shield } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Eye, Code, Zap, Shield, CheckCircle, XCircle, Loader2 } from "lucide-react"
 
 export default function ApiDocumentation() {
+  const [testResult, setTestResult] = useState<any>(null)
+  const [testing, setTesting] = useState(false)
+
+  const testGeminiConnection = async () => {
+    setTesting(true)
+    setTestResult(null)
+
+    try {
+      const response = await fetch("/api/test-gemini")
+      const data = await response.json()
+      setTestResult(data)
+    } catch (error: any) {
+      setTestResult({
+        success: false,
+        error: "Failed to connect to test endpoint",
+        details: error.message,
+      })
+    } finally {
+      setTesting(false)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-12 max-w-4xl">
@@ -15,6 +41,50 @@ export default function ApiDocumentation() {
           </div>
           <p className="text-xl text-muted-foreground">AI-powered pediatric eye health assessment API</p>
         </div>
+
+        {/* Gemini API Test Button */}
+        <Card className="mb-8 border-primary/20">
+          <CardHeader>
+            <CardTitle>Test Gemini API Connection</CardTitle>
+            <CardDescription>Verify your Google Gemini API key is configured correctly</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Button onClick={testGeminiConnection} disabled={testing} className="w-full">
+              {testing ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Testing Connection...
+                </>
+              ) : (
+                "Test Gemini API"
+              )}
+            </Button>
+
+            {testResult && (
+              <div
+                className={`p-4 rounded-lg ${testResult.success ? "bg-green-500/10 border border-green-500/20" : "bg-red-500/10 border border-red-500/20"}`}
+              >
+                <div className="flex items-start gap-3">
+                  {testResult.success ? (
+                    <CheckCircle className="h-5 w-5 text-green-500 mt-0.5" />
+                  ) : (
+                    <XCircle className="h-5 w-5 text-red-500 mt-0.5" />
+                  )}
+                  <div className="flex-1">
+                    <p className="font-semibold mb-1">{testResult.success ? "Success!" : "Failed"}</p>
+                    <p className="text-sm mb-2">{testResult.message || testResult.error}</p>
+                    {testResult.response && (
+                      <p className="text-xs text-muted-foreground">Response: {testResult.response}</p>
+                    )}
+                    {testResult.details && (
+                      <pre className="text-xs mt-2 p-2 bg-background rounded overflow-x-auto">{testResult.details}</pre>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Features */}
         <div className="grid md:grid-cols-3 gap-6 mb-12">
@@ -163,6 +233,10 @@ export default function ApiDocumentation() {
             <li>
               <code className="bg-background px-2 py-1 rounded">ALLOWED_ORIGIN</code> - CORS allowed origin (optional,
               defaults to *)
+            </li>
+            <li>
+              <code className="bg-background px-2 py-1 rounded">GOOGLE_GEMINI_API_KEY</code> - Your Google Gemini API
+              key (required for Gemini API testing)
             </li>
           </ul>
         </div>

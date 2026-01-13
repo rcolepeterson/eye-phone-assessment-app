@@ -1,6 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { generateObject } from "ai"
-import { openai } from "@ai-sdk/openai"
+import { GoogleGenerativeAI } from "@google/generative-ai"
 import { z } from "zod"
 
 const AssessmentSchema = z.object({
@@ -122,12 +121,12 @@ export async function POST(request: NextRequest) {
       additionalNotes = formData.get("additionalNotes") as string
     }
 
-    const apiKey = process.env.OPENAI_API_KEY
+    const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY
     if (!apiKey) {
-      console.log("[API] No OpenAI API key found")
+      console.log("[API] No Google API key found")
       return NextResponse.json(
         {
-          error: "OpenAI API key not configured",
+          error: "Google API key not configured",
           isMockResult: true,
         },
         {
@@ -139,17 +138,12 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    console.log("[API] Processing eye assessment...")
+    console.log("[API] Processing eye assessment with Gemini...")
 
-    const result = await generateObject({
-      model: openai("gpt-4o"),
-      messages: [
-        {
-          role: "user",
-          content: [
-            {
-              type: "text",
-              text: `You are a pediatric eye health screening AI assistant. Analyze this photo for signs of myopia and other eye conditions in children.
+    const genAI = new GoogleGenerativeAI(apiKey)
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" })
+
+    const prompt = `You are a pediatric eye health screening AI assistant. Analyze this photo for signs of myopia and other eye conditions in children.
 
 IMPORTANT MEDICAL CONTEXT:
 - Look for subtle markers like squinting, abnormal eye alignment, reduced corneal clarity
@@ -166,87 +160,89 @@ For each criterion, provide specific observations:
 4. Squinting/Strain: Look for signs of difficulty focusing, partial eye closure, or strain
 5. Overall Eye Health: Note any other visible abnormalities, inflammation, or concerns
 
-TECHNICAL METRICS REQUIRED:
-Provide quantitative measurements and analysis:
-
-IMAGE QUALITY METRICS:
-- resolution: Describe image dimensions and quality (e.g., "1920x1080, High Quality")
-- sharpnessScore: Rate image sharpness 0-100 (higher = sharper)
-- contrastRatio: Measure contrast 0-10 (higher = better contrast)
-- brightnessLevel: Average brightness 0-255 (128 = optimal)
-
-EYE GEOMETRY MEASUREMENTS:
-- pupilDiameterLeft: Estimated pupil diameter in mm (2-8mm typical)
-- pupilDiameterRight: Estimated pupil diameter in mm (2-8mm typical)
-- pupilAsymmetryRatio: Left/Right pupil size ratio (1.0 = perfect symmetry)
-- eyeAlignmentAngle: Deviation from horizontal in degrees (0 = perfect alignment)
-- interPupillaryDistance: Distance between pupils in mm (50-70mm typical for children)
-
-RISK INDICATOR SCORES (0-100%):
-- squintingProbability: Likelihood of squinting behavior detected
-- alignmentDeviation: Degree of eye misalignment detected
-- cornealReflexSymmetry: Symmetry of corneal light reflexes
-- focusAccuracy: Apparent focusing ability assessment
-
-CONFIDENCE INTERVALS (CRITICAL - PROVIDE REALISTIC RANGES):
-- overallAssessment: Provide a realistic confidence range for the overall assessment
-  * Low Risk cases: typically 75-95% confidence range
-  * Medium Risk cases: typically 60-85% confidence range  
-  * High Risk cases: typically 70-90% confidence range
-- myopiaRisk: Provide a realistic confidence range for myopia risk specifically
-  * Low myopia risk: typically 5-25% risk range
-  * Medium myopia risk: typically 25-65% risk range
-  * High myopia risk: typically 60-85% risk range
-
-EXAMPLE CONFIDENCE INTERVALS:
-- For Low Risk overall: lower: 78, upper: 92
-- For Medium Risk overall: lower: 65, upper: 82
-- For Low myopia risk: lower: 8, upper: 22
-- For Medium myopia risk: lower: 35, upper: 58
-
-RESPONSE FORMAT REQUIREMENTS:
-- riskLevel: Must be exactly "Low Risk", "Medium Risk", or "High Risk"
-- explanation: Overall summary of findings (minimum 50 characters)
-- confidence: Number between 0 and 1 representing assessment confidence
-- detectedFeatures: Array of specific observable features
-- recommendations: Array of specific actionable recommendations
-- visualAidSuggestions: Array of what to look for in the photo
-- detailedAnalysis: Object with specific findings for each criterion
-- technicalMetrics: Object with all quantitative measurements and scores
-
-RISK LEVELS:
-- Low Risk: Normal findings across all criteria, symmetric features
-- Medium Risk: Minor asymmetries or early signs requiring monitoring
-- High Risk: Significant abnormalities requiring immediate professional attention
-
 ${childAge ? `Child's age: ${childAge} years` : ""}
 ${additionalNotes ? `Additional notes: ${additionalNotes}` : ""}
 
-IMPORTANT: Provide realistic quantitative measurements based on visual analysis. Be precise with numerical values while maintaining medical accuracy. Confidence intervals must show meaningful ranges, not identical values.`,
-            },
-            {
-              type: "image",
-              image: base64Image,
-            },
-          ],
-        },
-      ],
-      schema: AssessmentSchema,
-      temperature: 0.3,
-    })
+IMPORTANT: You must respond with ONLY valid JSON in this exact format, no additional text:
+{
+  "riskLevel": "Low Risk" | "Medium Risk" | "High Risk",
+  "explanation": "string (minimum 50 characters)",
+  "confidence": number (0-1),
+  "detectedFeatures": ["string"],
+  "recommendations": ["string"],
+  "visualAidSuggestions": ["string"],
+  "detailedAnalysis": {
+    "eyeAlignment": "string",
+    "pupilResponse": "string",
+    "cornealClarity": "string",
+    "squintingStrain": "string",
+    "overallEyeHealth": "string"
+  },
+  "technicalMetrics": {
+    "imageQuality": {
+      "resolution": "string",
+      "sharpnessScore": number (0-100),
+      "contrastRatio": number (0-10),
+      "brightnessLevel": number (0-255)
+    },
+    "eyeGeometry": {
+      "pupilDiameterLeft": number (0-20),
+      "pupilDiameterRight": number (0-20),
+      "pupilAsymmetryRatio": number (0-2),
+      "eyeAlignmentAngle": number (-45 to 45),
+      "interPupillaryDistance": number (0-80)
+    },
+    "riskIndicators": {
+      "squintingProbability": number (0-100),
+      "alignmentDeviation": number (0-100),
+      "cornealReflexSymmetry": number (0-100),
+      "focusAccuracy": number (0-100)
+    },
+    "confidenceIntervals": {
+      "overallAssessment": {
+        "lower": number (0-100),
+        "upper": number (0-100)
+      },
+      "myopiaRisk": {
+        "lower": number (0-100),
+        "upper": number (0-100)
+      }
+    }
+  }
+}`
 
-    console.log("[API] Assessment completed successfully")
+    const result = await model.generateContent([
+      prompt,
+      {
+        inlineData: {
+          mimeType: "image/jpeg",
+          data: base64Image,
+        },
+      },
+    ])
+
+    const response = result.response
+    const text = response.text()
+
+    console.log("[API] Gemini raw response:", text.substring(0, 200))
+
+    // Parse JSON response
+    const jsonMatch = text.match(/\{[\s\S]*\}/)
+    if (!jsonMatch) {
+      throw new Error("No valid JSON found in response")
+    }
+
+    const assessmentData = JSON.parse(jsonMatch[0])
+
+    // Validate with schema
+    const validated = AssessmentSchema.parse(assessmentData)
+
+    console.log("[API] Gemini assessment completed successfully")
 
     return NextResponse.json(
       {
-        riskLevel: result.object.riskLevel,
-        explanation: result.object.explanation,
-        confidence: Math.round(result.object.confidence * 100) / 100,
-        detectedFeatures: result.object.detectedFeatures,
-        recommendations: result.object.recommendations,
-        visualAidSuggestions: result.object.visualAidSuggestions,
-        detailedAnalysis: result.object.detailedAnalysis,
-        technicalMetrics: result.object.technicalMetrics,
+        ...validated,
+        confidence: Math.round(validated.confidence * 100) / 100,
         isMockResult: false,
       },
       {
@@ -261,7 +257,7 @@ IMPORTANT: Provide realistic quantitative measurements based on visual analysis.
     let errorMessage = "AI service temporarily unavailable"
     if (error instanceof Error) {
       if (error.message.includes("API key") || error.message.includes("authentication")) {
-        errorMessage = "OpenAI API key not configured or invalid"
+        errorMessage = "Google API key not configured or invalid"
       } else if (error.message.includes("quota") || error.message.includes("billing")) {
         errorMessage = "API quota exceeded or billing issue"
       }
