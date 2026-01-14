@@ -26,7 +26,7 @@ const AssessmentSchema = z.object({
     eyeGeometry: z.object({
       pupilDiameterLeft: z.number().min(0).max(20),
       pupilDiameterRight: z.number().min(0).max(20),
-      pupilAsymmetryRatio: z.number().min(0).max(2),
+      pupilAsymmetryRatio: z.number().min(0).max(10),
       eyeAlignmentAngle: z.number().min(-45).max(45),
       interPupillaryDistance: z.number().min(0).max(80),
     }),
@@ -202,7 +202,7 @@ IMPORTANT: You must respond with ONLY valid JSON in this exact format, no additi
     "eyeGeometry": {
       "pupilDiameterLeft": number (0-20),
       "pupilDiameterRight": number (0-20),
-      "pupilAsymmetryRatio": number (0-2),
+      "pupilAsymmetryRatio": number (0-10),
       "eyeAlignmentAngle": number (-45 to 45),
       "interPupillaryDistance": number (0-80)
     },
