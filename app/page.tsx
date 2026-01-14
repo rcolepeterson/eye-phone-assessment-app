@@ -42,6 +42,32 @@ export default function ApiDocumentation() {
           <p className="text-xl text-muted-foreground">AI-powered pediatric eye health assessment API</p>
         </div>
 
+        <div className="grid md:grid-cols-2 gap-4 mb-8">
+          <Card className="border-primary/20">
+            <CardHeader>
+              <CardTitle className="text-lg">Single Image Test</CardTitle>
+              <CardDescription>Test with 1 image (3-10 seconds)</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button asChild className="w-full">
+                <a href="/test">Open Test Interface</a>
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="border-primary/20">
+            <CardHeader>
+              <CardTitle className="text-lg">Batch Test (6 Images)</CardTitle>
+              <CardDescription>Test with up to 6 images (10-25 seconds)</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button asChild className="w-full bg-transparent" variant="outline">
+                <a href="/test-batch">Open Batch Test Interface</a>
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+
         {/* Gemini API Test Button */}
         <Card className="mb-8 border-primary/20">
           <CardHeader>
@@ -122,53 +148,89 @@ export default function ApiDocumentation() {
         {/* API Endpoint */}
         <Card className="mb-8">
           <CardHeader>
-            <CardTitle>API Endpoint</CardTitle>
-            <CardDescription>Eye health assessment endpoint</CardDescription>
+            <CardTitle>API Endpoints</CardTitle>
+            <CardDescription>Available eye health assessment endpoints</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-6">
             <div>
               <h3 className="font-semibold mb-2">POST /api/assess-eyes</h3>
               <p className="text-sm text-muted-foreground mb-4">
-                Analyzes eye photos and returns detailed health assessment
+                Analyzes a single eye photo and returns detailed health assessment (3-10 seconds)
               </p>
-            </div>
 
-            <div>
-              <h4 className="font-semibold text-sm mb-2">Request (multipart/form-data)</h4>
-              <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto">
-                {`FormData:
-  image: File (required) - Eye photo
-  childAge: string (optional)
-  additionalNotes: string (optional)`}
-              </pre>
-            </div>
+              <div className="space-y-4">
+                <div>
+                  <h4 className="font-semibold text-sm mb-2">Request (JSON)</h4>
+                  <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto">
+                    {`{
+  "image": "data:image/jpeg;base64,...",
+  "childAge": "8" (optional),
+  "additionalNotes": "notes" (optional)
+}`}
+                  </pre>
+                </div>
 
-            <div>
-              <h4 className="font-semibold text-sm mb-2">Response</h4>
-              <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto">
-                {`{
+                <div>
+                  <h4 className="font-semibold text-sm mb-2">Response</h4>
+                  <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto">
+                    {`{
   "riskLevel": "Low Risk" | "Medium Risk" | "High Risk",
   "explanation": "string",
   "confidence": 0.85,
   "detectedFeatures": ["string"],
   "recommendations": ["string"],
-  "visualAidSuggestions": ["string"],
-  "detailedAnalysis": {
-    "eyeAlignment": "string",
-    "pupilResponse": "string",
-    "cornealClarity": "string",
-    "squintingStrain": "string",
-    "overallEyeHealth": "string"
-  },
-  "technicalMetrics": {
-    "imageQuality": {...},
-    "eyeGeometry": {...},
-    "riskIndicators": {...},
-    "confidenceIntervals": {...}
-  },
+  "detailedAnalysis": { ... },
+  "technicalMetrics": { ... },
   "isMockResult": false
 }`}
-              </pre>
+                  </pre>
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-6 border-t">
+              <h3 className="font-semibold mb-2">POST /api/assess-eyes-batch</h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                Analyzes up to 6 eye photos together with combined assessment and progression analysis (10-25 seconds)
+              </p>
+
+              <div className="space-y-4">
+                <div>
+                  <h4 className="font-semibold text-sm mb-2">Request (JSON)</h4>
+                  <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto">
+                    {`{
+  "images": [
+    "data:image/jpeg;base64,...",
+    "data:image/jpeg;base64,...",
+    // ... up to 6 images
+  ]
+}`}
+                  </pre>
+                </div>
+
+                <div>
+                  <h4 className="font-semibold text-sm mb-2">Response</h4>
+                  <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto">
+                    {`{
+  "riskLevel": "Low Risk" | "Medium Risk" | "High Risk",
+  "explanation": "combined analysis from all images",
+  "confidence": 0.85,
+  "detectedFeatures": ["string"],
+  "recommendations": ["string"],
+  "detailedAnalysis": { ... },
+  "technicalMetrics": { ... },
+  "progressionAnalysis": {
+    "overallTrend": "string",
+    "imageComparison": "string",
+    "temporalChanges": ["string"]
+  },
+  "imagesAnalyzed": 6,
+  "processingTimeMs": 15234,
+  "isMockResult": false
+}`}
+                  </pre>
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>
