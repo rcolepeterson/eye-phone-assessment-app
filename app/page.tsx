@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Eye, Code, Zap, Shield, CheckCircle, XCircle, Loader2 } from "lucide-react"
+import { Eye, CheckCircle, XCircle, Loader2, FileText } from "lucide-react"
 
 export default function ApiDocumentation() {
   const [testResult, setTestResult] = useState<any>(null)
@@ -42,7 +42,8 @@ export default function ApiDocumentation() {
           <p className="text-xl text-muted-foreground">AI-powered pediatric eye health assessment API</p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-4 mb-8">
+        {/* Updated Test Cards Grid */}
+        <div className="grid md:grid-cols-3 gap-4 mb-8">
           <Card className="border-primary/20">
             <CardHeader>
               <CardTitle className="text-lg">Single Image Test</CardTitle>
@@ -63,6 +64,21 @@ export default function ApiDocumentation() {
             <CardContent>
               <Button asChild className="w-full bg-transparent" variant="outline">
                 <a href="/test-batch">Open Batch Test Interface</a>
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="border-primary/20">
+            <CardHeader>
+              <CardTitle className="text-lg">View AI Prompts</CardTitle>
+              <CardDescription>See and edit the AI instructions</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button asChild className="w-full bg-transparent" variant="outline">
+                <a href="/prompts">
+                  <FileText className="h-4 w-4 mr-2" />
+                  View Prompts
+                </a>
               </Button>
             </CardContent>
           </Card>
@@ -116,7 +132,7 @@ export default function ApiDocumentation() {
         <div className="grid md:grid-cols-3 gap-6 mb-12">
           <Card>
             <CardHeader>
-              <Zap className="h-8 w-8 text-primary mb-2" />
+              <div className="h-8 w-8 text-primary mb-2">Fast & Accurate</div>
               <CardTitle>Fast & Accurate</CardTitle>
             </CardHeader>
             <CardContent>
@@ -127,7 +143,7 @@ export default function ApiDocumentation() {
           </Card>
           <Card>
             <CardHeader>
-              <Code className="h-8 w-8 text-primary mb-2" />
+              <div className="h-8 w-8 text-primary mb-2">Easy Integration</div>
               <CardTitle>Easy Integration</CardTitle>
             </CardHeader>
             <CardContent>
@@ -136,7 +152,7 @@ export default function ApiDocumentation() {
           </Card>
           <Card>
             <CardHeader>
-              <Shield className="h-8 w-8 text-primary mb-2" />
+              <div className="h-8 w-8 text-primary mb-2">Secure</div>
               <CardTitle>Secure</CardTitle>
             </CardHeader>
             <CardContent>

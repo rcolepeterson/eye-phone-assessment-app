@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { GoogleGenerativeAI } from "@google/generative-ai"
 import { z } from "zod"
+import { SINGLE_IMAGE_PROMPT, JSON_SCHEMA_INSTRUCTION } from "@/lib/prompts"
 
 const AssessmentSchema = z.object({
   riskLevel: z.enum(["Low Risk", "Medium Risk", "High Risk"]),
@@ -157,73 +158,12 @@ export async function POST(request: NextRequest) {
     const genAI = new GoogleGenerativeAI(apiKey)
     const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" })
 
-    const prompt = `You are a pediatric eye health screening AI assistant. Analyze this photo for signs of myopia and other eye conditions in children.
-
-IMPORTANT MEDICAL CONTEXT:
-- Look for subtle markers like squinting, abnormal eye alignment, reduced corneal clarity
-- Check for asymmetric pupil response, eye positioning, and focus patterns
-- Consider signs of refractive errors, strabismus, or amblyopia
-- Base assessment on research showing 80% accuracy for myopia detection from photos
-
-DETAILED ANALYSIS REQUIRED:
-For each criterion, provide specific observations:
-
-1. Eye Alignment: Assess coordination, symmetry, and any signs of strabismus or misalignment
-2. Pupil Response: Evaluate size, shape, symmetry, and light reflex patterns
-3. Corneal Clarity: Check transparency, reflection patterns, and any cloudiness
-4. Squinting/Strain: Look for signs of difficulty focusing, partial eye closure, or strain
-5. Overall Eye Health: Note any other visible abnormalities, inflammation, or concerns
+    const prompt = `${SINGLE_IMAGE_PROMPT}
 
 ${childAge ? `Child's age: ${childAge} years` : ""}
 ${additionalNotes ? `Additional notes: ${additionalNotes}` : ""}
 
-IMPORTANT: You must respond with ONLY valid JSON in this exact format, no additional text:
-{
-  "riskLevel": "Low Risk" | "Medium Risk" | "High Risk",
-  "explanation": "string (minimum 50 characters)",
-  "confidence": number (0-1),
-  "detectedFeatures": ["string"],
-  "recommendations": ["string"],
-  "visualAidSuggestions": ["string"],
-  "detailedAnalysis": {
-    "eyeAlignment": "string",
-    "pupilResponse": "string",
-    "cornealClarity": "string",
-    "squintingStrain": "string",
-    "overallEyeHealth": "string"
-  },
-  "technicalMetrics": {
-    "imageQuality": {
-      "resolution": "string",
-      "sharpnessScore": number (0-100),
-      "contrastRatio": number (0-10),
-      "brightnessLevel": number (0-255)
-    },
-    "eyeGeometry": {
-      "pupilDiameterLeft": number (0-20),
-      "pupilDiameterRight": number (0-20),
-      "pupilAsymmetryRatio": number (0-10),
-      "eyeAlignmentAngle": number (-45 to 45),
-      "interPupillaryDistance": number (0-80)
-    },
-    "riskIndicators": {
-      "squintingProbability": number (0-100),
-      "alignmentDeviation": number (0-100),
-      "cornealReflexSymmetry": number (0-100),
-      "focusAccuracy": number (0-100)
-    },
-    "confidenceIntervals": {
-      "overallAssessment": {
-        "lower": number (0-100),
-        "upper": number (0-100)
-      },
-      "myopiaRisk": {
-        "lower": number (0-100),
-        "upper": number (0-100)
-      }
-    }
-  }
-}`
+${JSON_SCHEMA_INSTRUCTION}`
 
     const result = await model.generateContent([
       prompt,
